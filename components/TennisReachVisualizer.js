@@ -165,16 +165,23 @@ export default function TennisReachVisualizer() {
   const activeLateralNorm = (activePlayer.x - courtCenterX) / halfCourtWidth;
   const activeSide = activeLateralNorm < 0 ? "left" : "right";
 
+  // true when active player is on the top half — targets flip to bottom
+  const isTopPlayer = activePlayer.side === "top";
+
   const playerOutsideLeft = Math.max(0, singlesLeftX - activePlayer.x);
   const playerOutsideRight = Math.max(0, activePlayer.x - singlesRightX);
   const outsideBoost = 1.0;
   const netApproachBoost = netProximity * 1.2 * scale;
 
-  const singlesLeftBaselineCorner = { x: singlesLeftX, y: baselineTopY - baseExtension };
-  const singlesRightBaselineCorner = { x: singlesRightX, y: baselineTopY - baseExtension };
-  const serviceLeftCorner = { x: singlesLeftX, y: topServiceY };
-  const serviceRightCorner = { x: singlesRightX, y: topServiceY };
-  const serviceCenterCorner = { x: centerServiceX, y: topServiceY };
+  // Baseline and service corners — flipped for top players
+  const targetBaselineY = isTopPlayer ? baselineBottomY + baseExtension : baselineTopY - baseExtension;
+  const targetServiceY  = isTopPlayer ? bottomServiceY : topServiceY;
+
+  const singlesLeftBaselineCorner  = { x: singlesLeftX,  y: targetBaselineY };
+  const singlesRightBaselineCorner = { x: singlesRightX, y: targetBaselineY };
+  const serviceLeftCorner   = { x: singlesLeftX,   y: targetServiceY };
+  const serviceRightCorner  = { x: singlesRightX,  y: targetServiceY };
+  const serviceCenterCorner = { x: centerServiceX, y: targetServiceY };
 
   const interpolate = (p1, p2, t) => ({
     x: p1.x + (p2.x - p1.x) * t,
@@ -211,7 +218,7 @@ export default function TennisReachVisualizer() {
       ? interpolate(singlesLeftBaselineCorner, serviceLeftCorner, netProximity)
       : {
           x: singlesLeftX - (playerOutsideRight * outsideBoost + netApproachBoost),
-          y: baselineTopY - baseExtension,
+          y: targetBaselineY,
         };
 
   const rightSinglesAnchor =
@@ -219,7 +226,7 @@ export default function TennisReachVisualizer() {
       ? interpolate(singlesRightBaselineCorner, serviceRightCorner, netProximity)
       : {
           x: singlesRightX + (playerOutsideLeft * outsideBoost + netApproachBoost),
-          y: baselineTopY - baseExtension,
+          y: targetBaselineY,
         };
 
   const volleyCarryDistance = 1.8 * scale;
@@ -234,9 +241,13 @@ export default function TennisReachVisualizer() {
       ? extendThroughPoint(activePlayer, rightSinglesAnchor, volleyCarryDistance)
       : rightSinglesAnchor;
 
+  // Doubles windows also flip
+  const doublesLeftWindow  = { x: doublesLeftX,  y: targetBaselineY };
+  const doublesRightWindow = { x: doublesRightX, y: targetBaselineY };
+
   const target = {
-    doublesLeftWindow: { x: doublesLeftX, y: baselineTopY - baseExtension },
-    doublesRightWindow: { x: doublesRightX, y: baselineTopY - baseExtension },
+    doublesLeftWindow,
+    doublesRightWindow,
     singlesLeftWindow: singlesLeftTarget,
     singlesRightWindow: singlesRightTarget,
     serviceLeft: serviceLeftCorner,
