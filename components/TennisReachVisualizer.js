@@ -339,9 +339,10 @@ export default function TennisReachVisualizer() {
     serviceLineFull: openingBetween(angles.serviceLeft, angles.serviceRight),
   };
 
+  // Real-world meters from left sideline and near baseline
   const activePosition = {
     xMeters: ((activePlayer.x - playArea.x) / scale).toFixed(2),
-    yMetersFromTop: ((activePlayer.y - playArea.y) / scale).toFixed(2),
+    yMeters: ((activePlayer.y - playArea.y) / scale).toFixed(2),
   };
 
   const singlesLeftEnd = extendToEdge(activePlayer, target.singlesLeftWindow);
@@ -527,7 +528,8 @@ export default function TennisReachVisualizer() {
               <p><span className="font-medium">Full service window:</span> {openings.serviceLineFull.toFixed(1)}°</p>
               <p><span className="font-medium">Ad service box:</span> {openings.serviceBoxLeft.toFixed(1)}°</p>
               <p><span className="font-medium">Deuce service box:</span> {openings.serviceBoxRight.toFixed(1)}°</p>
-              <p><span className="font-medium">Player position:</span> x {activePosition.xMeters} m, y {activePosition.yMetersFromTop} m</p>
+              <p><span className="font-medium">Position (from left):</span> {activePosition.xMeters} m</p>
+              <p><span className="font-medium">Position (from baseline):</span> {activePosition.yMeters} m</p>
             </div>
           </div>
 
