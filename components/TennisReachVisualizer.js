@@ -195,11 +195,17 @@ export default function TennisReachVisualizer() {
   // At net (netProximity=1) → windows push well beyond the sidelines (sharp volley angles)
   const netWidenAmount = netProximity * netProximity * 3.5 * scale; // eased, max ~87px at net
 
-  const singlesLeftBaselineCorner  = { x: singlesLeftX  - netWidenAmount, y: targetBaselineY };
-  const singlesRightBaselineCorner = { x: singlesRightX + netWidenAmount, y: targetBaselineY };
-  const serviceLeftCorner   = { x: singlesLeftX  - netWidenAmount, y: targetServiceY };
-  const serviceRightCorner  = { x: singlesRightX + netWidenAmount, y: targetServiceY };
-  const serviceCenterCorner = { x: centerServiceX,                 y: targetServiceY };
+  // Down-the-line side stays pinned to the sideline — only cross-court side widens at net.
+  // Player on left  → left anchor = down-the-line (no widen), right anchor = cross-court (widen)
+  // Player on right → right anchor = down-the-line (no widen), left anchor = cross-court (widen)
+  const leftWidenAmount  = activeSide === "left"  ? 0 : netWidenAmount;
+  const rightWidenAmount = activeSide === "right" ? 0 : netWidenAmount;
+
+  const singlesLeftBaselineCorner  = { x: singlesLeftX  - leftWidenAmount,  y: targetBaselineY };
+  const singlesRightBaselineCorner = { x: singlesRightX + rightWidenAmount, y: targetBaselineY };
+  const serviceLeftCorner   = { x: singlesLeftX  - leftWidenAmount,  y: targetServiceY };
+  const serviceRightCorner  = { x: singlesRightX + rightWidenAmount, y: targetServiceY };
+  const serviceCenterCorner = { x: centerServiceX,                   y: targetServiceY };
 
   const interpolate = (p1, p2, t) => ({
     x: p1.x + (p2.x - p1.x) * t,
@@ -235,7 +241,7 @@ export default function TennisReachVisualizer() {
     activeSide === "left"
       ? interpolate(singlesLeftBaselineCorner, serviceLeftCorner, netProximity)
       : {
-          x: singlesLeftX - netWidenAmount - (playerOutsideRight * outsideBoost + netApproachBoost),
+          x: singlesLeftX - leftWidenAmount - (playerOutsideRight * outsideBoost + netApproachBoost),
           y: targetBaselineY,
         };
 
@@ -243,7 +249,7 @@ export default function TennisReachVisualizer() {
     activeSide === "right"
       ? interpolate(singlesRightBaselineCorner, serviceRightCorner, netProximity)
       : {
-          x: singlesRightX + netWidenAmount + (playerOutsideLeft * outsideBoost + netApproachBoost),
+          x: singlesRightX + rightWidenAmount + (playerOutsideLeft * outsideBoost + netApproachBoost),
           y: targetBaselineY,
         };
 
@@ -259,9 +265,9 @@ export default function TennisReachVisualizer() {
       ? extendThroughPoint(activePlayer, rightSinglesAnchor, volleyCarryDistance)
       : rightSinglesAnchor;
 
-  // Doubles windows also widen at net
-  const doublesLeftWindow  = { x: doublesLeftX  - netWidenAmount, y: targetBaselineY };
-  const doublesRightWindow = { x: doublesRightX + netWidenAmount, y: targetBaselineY };
+  // Doubles windows — down-the-line side stays pinned, cross-court side widens
+  const doublesLeftWindow  = { x: doublesLeftX  - leftWidenAmount,  y: targetBaselineY };
+  const doublesRightWindow = { x: doublesRightX + rightWidenAmount, y: targetBaselineY };
 
   const target = {
     doublesLeftWindow,
