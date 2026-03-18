@@ -59,9 +59,9 @@ export default function TennisReachVisualizer() {
   const [players, setPlayers] = useState([
     {
       id: 1,
-      name: "Player 1",
+      name: "P1",
       side: "bottom",
-      x: playArea.x + court.centerX,
+      x: playArea.x + court.centerX - 60,
       y: playArea.y + court.netY + 190,
       color: "#2563eb",
       reach: 110,
@@ -69,11 +69,31 @@ export default function TennisReachVisualizer() {
     },
     {
       id: 2,
-      name: "Player 2",
+      name: "P2",
+      side: "bottom",
+      x: playArea.x + court.centerX + 60,
+      y: playArea.y + court.netY + 300,
+      color: "#0891b2",
+      reach: 110,
+      active: false,
+    },
+    {
+      id: 3,
+      name: "P3",
       side: "top",
-      x: playArea.x + court.centerX,
+      x: playArea.x + court.centerX - 60,
       y: playArea.y + court.netY - 190,
       color: "#dc2626",
+      reach: 110,
+      active: false,
+    },
+    {
+      id: 4,
+      name: "P4",
+      side: "top",
+      x: playArea.x + court.centerX + 60,
+      y: playArea.y + court.netY - 300,
+      color: "#ea580c",
       reach: 110,
       active: false,
     },
@@ -361,13 +381,30 @@ export default function TennisReachVisualizer() {
         <div className="space-y-4">
           <div className="bg-white rounded-2xl shadow-md p-4">
             <h2 className="font-semibold text-slate-900 mb-3">Controls</h2>
-            <div className="space-y-3">
-              {players.map((player) => (
+
+            <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Bottom side</p>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {players.filter(p => p.side === "bottom").map((player) => (
                 <button
                   key={player.id}
                   onClick={() => setPlayers((prev) => prev.map((p) => ({ ...p, active: p.id === player.id })))}
-                  className={`w-full rounded-xl px-4 py-3 text-left border transition ${player.active ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-700"}`}
+                  className={`rounded-xl px-3 py-2 text-sm text-left border transition flex items-center gap-2 ${player.active ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-700"}`}
                 >
+                  <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: player.color }} />
+                  {player.name}
+                </button>
+              ))}
+            </div>
+
+            <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Top side</p>
+            <div className="grid grid-cols-2 gap-2">
+              {players.filter(p => p.side === "top").map((player) => (
+                <button
+                  key={player.id}
+                  onClick={() => setPlayers((prev) => prev.map((p) => ({ ...p, active: p.id === player.id })))}
+                  className={`rounded-xl px-3 py-2 text-sm text-left border transition flex items-center gap-2 ${player.active ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-700"}`}
+                >
+                  <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: player.color }} />
                   {player.name}
                 </button>
               ))}
