@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 export default function TennisReachVisualizer() {
   const real = {
@@ -105,6 +105,42 @@ export default function TennisReachVisualizer() {
     y: netY,
   });
   const svgRef = useRef(null);
+
+  const [formations, setFormations] = useState(() => {
+    try {
+      const saved = localStorage.getItem("tennis-formations");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [newFormationName, setNewFormationName] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+  useEffect(() => {
+    try { localStorage.setItem("tennis-formations", JSON.stringify(formations)); }
+    catch {}
+  }, [formations]);
+
+  const saveFormation = () => {
+    const name = newFormationName.trim() || `Formation ${formations.length + 1}`;
+    const formation = {
+      id: Date.now(),
+      name,
+      players: players.map(({ id, name, side, x, y, color, reach, active }) => ({ id, name, side, x, y, color, reach, active })),
+      ball: { ...ball },
+    };
+    setFormations(prev => [formation, ...prev]);
+    setNewFormationName("");
+  };
+
+  const loadFormation = (formation) => {
+    setPlayers(formation.players);
+    setBall(formation.ball);
+  };
+
+  const deleteFormation = (id) => {
+    setFormations(prev => prev.filter(f => f.id !== id));
+    setConfirmDeleteId(null);
+  };
 
   const activePlayer = players.find((p) => p.active) || players[0];
 
@@ -501,6 +537,61 @@ export default function TennisReachVisualizer() {
               <p><span className="font-medium text-slate-800">Blue sector:</span> doubles shot window.</p>
               <p><span className="font-medium text-slate-800">Orange sector:</span> singles shot window. Near the net, the line aims toward the service-line/singles-line intersection and continues beyond it.</p>
               <p><span className="font-medium text-slate-800">Purple/green:</span> service boxes with official service margins.</p>
+            </div>
+          </div>
+
+          {/* Formations */}
+          <div className="bg-white rounded-2xl shadow-md p-4">
+            <h2 className="font-semibold text-slate-900 mb-3">Formations</h2>
+
+            {/* Save current */}
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={newFormationName}
+                onChange={(e) => setNewFormationName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && saveFormation()}
+                placeholder="Formation name…"
+                className="flex-1 rounded-lg border border-slate-200 px-2 py-2 text-sm text-slate-800 focus:outline-none focus:border-slate-400"
+                maxLength={24}
+              />
+              <button
+                onClick={saveFormation}
+                className="px-3 py-2 bg-slate-900 text-white text-sm rounded-lg font-medium hover:bg-slate-700 transition flex-shrink-0"
+              >
+                Save
+              </button>
+            </div>
+
+            {/* Saved list */}
+            {formations.length === 0 && (
+              <p className="text-sm text-slate-400 text-center py-3">No formations saved yet.</p>
+            )}
+            <div className="space-y-2">
+              {formations.map((f) => (
+                <div key={f.id} className="flex items-center gap-2 rounded-xl border border-slate-100 px-3 py-2 hover:border-slate-300 transition">
+                  <button
+                    onClick={() => loadFormation(f)}
+                    className="flex-1 text-left text-sm font-medium text-slate-800 truncate"
+                  >
+                    {f.name}
+                  </button>
+                  {confirmDeleteId === f.id ? (
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button onClick={() => deleteFormation(f.id)} className="text-xs px-2 py-1 bg-red-500 text-white rounded-lg">Delete</button>
+                      <button onClick={() => setConfirmDeleteId(null)} className="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded-lg">Cancel</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDeleteId(f.id)}
+                      className="text-slate-300 hover:text-red-400 transition text-lg leading-none flex-shrink-0 px-1"
+                      title="Delete"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
